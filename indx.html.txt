@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI算命小程序</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        body {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #8e44ad;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .disclaimer {
+            background-color: #fff8e1;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border-left: 4px solid #ffc107;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #8e44ad;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #732d91;
+        }
+        .result {
+            display: none;
+            margin-top: 30px;
+            animation: fadeIn 0.5s;
+        }
+        .result-section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed #eee;
+        }
+        .result-section:last-child {
+            border-bottom: none;
+        }
+        .luck-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .luck-level {
+            font-weight: bold;
+        }
+        .excellent {
+            color: #27ae60;
+        }
+        .good {
+            color: #2ecc71;
+        }
+        .average {
+            color: #f39c12;
+        }
+        .warning {
+            color: #e67e22;
+        }
+        .bad {
+            color: #e74c3c;
+        }
+        .lucky-item {
+            display: inline-block;
+            background-color: #f0e6ff;
+            padding: 5px 10px;
+            border-radius: 15px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .loading {
+            text-align: center;
+            display: none;
+            margin: 20px 0;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #8e44ad;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔮 AI算命小程序</h1>
+        
+        <div class="disclaimer">
+            本程序仅供娱乐，所有结果由AI随机生成，切勿过于认真。命运掌握在自己手中，保持积极心态最重要！
+        </div>
+        
+        <div id="form">
+            <div class="form-group">
+                <label for="birth-year">出生年份</label>
+                <select id="birth-year">
+                    <option value="">请选择年份</option>
+                    <!-- 生成从1940到当前年份的选项 -->
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="birth-month">出生月份</label>
+                <select id="birth-month">
+                    <option value="">请选择月份</option>
+                    <!-- 生成1-12月的选项 -->
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="birth-day">出生日期</label>
+                <select id="birth-day">
+                    <option value="">请选择日期</option>
+                    <!-- 日期会根据年月动态生成 -->
+                </select>
+            </div>
+            
+            <button id="calculate-btn">开始算命</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>AI正在努力分析您的命运...</p>
+        </div>
+        
+        <div class="result" id="result">
+            <h2>✨ 您的算命结果 ✨</h2>
+            
+            <div class="result-section">
+                <h3>基本信息</h3>
+                <p id="basic-info"></p>
+                <p id="zodiac-info"></p>
+            </div>
+            
+            <div class="result-section">
+                <h3>性格分析</h3>
+                <p id="personality"></p>
+            </div>
+            
+            <div class="result-section">
+                <h3>今日运势</h3>
+                <div id="luck-analysis"></div>
+            </div>
+            
+            <div class="result-section">
+                <h3>幸运物</h3>
+                <p><strong>幸运数字：</strong><span id="lucky-numbers"></span></p>
+                <p><strong>幸运颜色：</strong><span id="lucky-color"></span></p>
+            </div>
+            
+            <div class="result-section">
+                <h3>AI建议</h3>
+                <p id="advice"></p>
+            </div>
+            
+            <button id="reset-btn">重新算命</button>
+        </div>
+    </div>
+
+    <script>
+        // 初始化日期选择器
+        document.addEventListener('DOMContentLoaded', function() {
+            // 生成年份选项 (1940-当前年份)
+            const yearSelect = document.getElementById('birth-year');
+            const currentYear = new Date().getFullYear();
+            for (let year = currentYear; year >= 1940; year--) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year + '年';
+                yearSelect.appendChild(option);
+            }
+            
+            // 生成月份选项 (1-12)
+            const monthSelect = document.getElementById('birth-month');
+            for (let month = 1; month <= 12; month++) {
+                const option = document.createElement('option');
+                option.value = month;
+                option.textContent = month + '月';
+                monthSelect.appendChild(option);
+            }
+            
+            // 当月变化时更新日期选项
+            yearSelect.addEventListener('change', updateDays);
+            monthSelect.addEventListener('change', updateDays);
+            
+            // 计算按钮点击事件
+            document.getElementById('calculate-btn').addEventListener('click', calculateFortune);
+            
+            // 重置按钮点击事件
+            document.getElementById('reset-btn').addEventListener('click', function() {
+                document.getElementById('result').style.display = 'none';
+                document.getElementById('form').style.display = 'block';
+            });
+        });
+        
+        // 更新日期选择器的天数
+        function updateDays() {
+            const yearSelect = document.getElementById('birth-year');
+            const monthSelect = document.getElementById('birth-month');
+            const daySelect = document.getElementById('birth-day');
+            
+            // 清除现有选项
+            while (daySelect.options.length > 1) {
+                daySelect.remove(1);
+            }
+            
+            // 如果年月都已选择
+            if (yearSelect.value && monthSelect.value) {
+                const year = parseInt(yearSelect.value);
+                const month = parseInt(monthSelect.value);
+                const daysInMonth = new Date(year, month, 0).getDate();
+                
+                // 添加日期选项
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const option = document.createElement('option');
+                    option.value = day;
+                    option.textContent = day + '日';
+                    daySelect.appendChild(option);
+                }
+            }
+        }
+        
+        // 计算命运
+        function calculateFortune() {
+            const year = document.getElementById('birth-year').value;
+            const month = document.getElementById('birth-month').value;
+            const day = document.getElementById('birth-day').value;
+            
+            // 验证输入
+            if (!year || !month || !day) {
+                alert('请填写完整的出生日期！');
+                return;
+            }
+            
+            // 显示加载中
+            document.getElementById('form').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            
+            // 模拟AI计算延迟
+            setTimeout(function() {
+                // 隐藏加载中，显示结果
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('result').style.display = 'block';
+                
+                // 计算年龄
+                const birthDate = new Date(year, month - 1, day);
+                const age = new Date().getFullYear() - birthDate.getFullYear();
+                
+                // 获取星座
+                const zodiacSign = getZodiacSign(month, day);
+                
+                // 获取生肖
+                const chineseZodiac = getChineseZodiac(year);
+                
+                // 显示基本信息
+                document.getElementById('basic-info').textContent = 
+                    `出生日期：${year}年${month}月${day}日，年龄：${age}岁`;
+                document.getElementById('zodiac-info').textContent = 
+                    `星座：${zodiacSign}，生肖：${chineseZodiac}`;
+                
+                // 显示性格分析
+                document.getElementById('personality').textContent = 
+                    generatePersonality(zodiacSign);
+                
+                // 显示运势分析
+                const luckAnalysis = generateLuckAnalysis(zodiacSign, chineseZodiac);
+                const luckContainer = document.getElementById('luck-analysis');
+                luckContainer.innerHTML = '';
+                
+                for (const [aspect, result] of Object.entries(luckAnalysis)) {
+                    const div = document.createElement('div');
+                    div.className = 'luck-item';
+                    
+                    const aspectSpan = document.createElement('span');
+                    aspectSpan.textContent = aspect;
+                    
+                    const resultSpan = document.createElement('span');
+                    resultSpan.className = 'luck-level ' + getLuckClass(result);
+                    resultSpan.textContent = result;
+                    
+                    div.appendChild(aspectSpan);
+                    div.appendChild(resultSpan);
+                    luckContainer.appendChild(div);
+                }
+                
+                // 显示幸运数字和颜色
+                const luckyNumbers = generateLuckyNumbers();
+                document.getElementById('lucky-numbers').innerHTML = 
+                    luckyNumbers.map(num => `<span class="lucky-item">${num}</span>`).join('');
+                
+                document.getElementById('lucky-color').textContent = generateLuckyColor();
+                
+                // 显示建议
+                document.getElementById('advice').textContent = generateAdvice();
+            }, 1500); // 1.5秒延迟模拟AI计算
+        }
+        
+        // 获取星座
+        function getZodiacSign(month, day) {
+            month = parseInt(month);
+            day = parseInt(day);
+            
+            if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return "水瓶座";
+            if ((month === 2 && day >= 19) || (month === 3 && day <= 20)) return "双鱼座";
+            if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return "白羊座";
+            if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return "金牛座";
+            if ((month === 5 && day >= 21) || (month === 6 && day <= 20)) return "双子座";
+            if ((month === 6 && day >= 21) || (month === 7 && day <= 22)) return "巨蟹座";
+            if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return "狮子座";
+            if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) return "处女座";
+            if ((month === 9 && day >= 23) || (month === 10 && day <= 22)) return "天秤座";
+            if ((month === 10 && day >= 23) || (month === 11 && day <= 21)) return "天蝎座";
+            if ((month === 11 && day >= 22) || (month === 12 && day <= 21)) return "射手座";
+            return "摩羯座";
+        }
+        
+        // 获取生肖
+        function getChineseZodiac(year) {
+            const zodiacs = ["鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊", "猴", "鸡", "狗", "猪"];
+            return zodiacs[(year - 4) % 12];
+        }
+        
+        // 生成性格分析
+        function generatePersonality(zodiacSign) {
+            const personalities = {
+                "白羊座": "你是一个充满活力和热情的人，勇敢无畏，喜欢接受挑战。你的领导能力强，但有时会显得冲动。",
+                "金牛座": "你稳重务实，注重物质安全和舒适生活。你有很强的耐心，但有时会显得固执己见。",
+                "双子座": "你聪明好奇，思维敏捷，善于沟通。你对新鲜事物充满兴趣，但有时注意力难以集中。",
+                "巨蟹座": "你情感丰富，家庭观念强，有很强的保护欲。你敏感细腻，但有时会过于情绪化。",
+                "狮子座": "你自信大方，富有创造力，喜欢成为关注焦点。你慷慨热情，但有时会显得骄傲自负。",
+                "处女座": "你细致认真，分析力强，追求完美。你务实可靠，但有时会过于挑剔。",
+                "天秤座": "你追求和谐，公正平衡，善于社交。你审美观强，但有时会犹豫不决。",
+                "天蝎座": "你热情坚定，神秘深沉，有很强的洞察力。你意志坚强，但有时会显得多疑。",
+                "射手座": "你乐观开朗，热爱自由，喜欢冒险。你直率坦诚，但有时会缺乏耐心。",
+                "摩羯座": "你实际务实，有野心，自律性强。你保守传统，但有时会显得过于严肃。",
+                "水瓶座": "你创新独立，思想开放，富有人道主义精神。你理性客观，但有时会显得疏离。",
+                "双鱼座": "你富有同情心，直觉敏锐，具有艺术气质。你善解人意，但有时会过于理想化。"
+            };
+            return personalities[zodiacSign] || "你是一个独特的人，具有多面性格特征。";
+        }
+        
+        // 生成运势分析
+        function generateLuckAnalysis(zodiacSign, chineseZodiac) {
+            const aspects = ["事业", "爱情", "健康", "财运", "人际关系"];
+            const results = ["极佳", "良好", "一般", "需要注意", "不太理想"];
+            
+            const analysis = {};
+            for (const aspect of aspects) {
+                // 根据星座和生肖给一些加权随机
+                let randomIndex = Math.floor(Math.random() * results.length);
+                
+                // 给某些星座在某些方面更好的运势
+                if ((zodiacSign === "狮子座" && aspect === "事业") || 
+                    (zodiacSign === "天秤座" && aspect === "人际关系") ||
+                    (zodiacSign === "金牛座" && aspect === "财运")) {
+                    randomIndex = Math.max(0, randomIndex - 1);
+                }
+                
+                // 给某些生肖在某些方面更好的运势
+                if ((chineseZodiac === "龙" && aspect === "事业") || 
+                    (chineseZodiac === "兔" && aspect === "人际关系") ||
+                    (chineseZodiac === "猪" && aspect === "财运")) {
+                    randomIndex = Math.max(0, randomIndex - 1);
+                }
+                
+                analysis[aspect] = results[randomIndex];
+            }
+            return analysis;
+        }
+        
+        // 获取运势等级对应的CSS类
+        function getLuckClass(result) {
+            switch(result) {
+                case "极佳": return "excellent";
+                case "良好": return "good";
+                case "一般": return "average";
+                case "需要注意": return "warning";
+                case "不太理想": return "bad";
+                default: return "";
+            }
+        }
+        
+        // 生成幸运数字
+        function generateLuckyNumbers() {
+            const numbers = [];
+            while (numbers.length < 5) {
+                const num = Math.floor(Math.random() * 49) + 1;
+                if (!numbers.includes(num)) {
+                    numbers.push(num);
+                }
+            }
+            return numbers.sort((a, b) => a - b);
+        }
+        
+        // 生成幸运颜色
+        function generateLuckyColor() {
+            const colors = ["红色", "橙色", "黄色", "绿色", "蓝色", "紫色", "粉色", "金色", "银色", "白色", "黑色"];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+        
+        // 生成建议
+        function generateAdvice() {
+            const advices = [
+                "今天适合尝试新事物，走出舒适区，你会发现意想不到的机会。",
+                "保持耐心，好事即将发生，不要因为暂时的困难而放弃。",
+                "注意与身边人的沟通方式，温和的表达会让关系更加融洽。",
+                "财务上需要谨慎决策，避免冲动消费，做好长期规划。",
+                "健康是最大的财富，注意劳逸结合，适当运动对身体有益。",
+                "机会总是留给有准备的人，持续学习会为你打开新的大门。",
+                "过去的经验是宝贵的财富，反思能帮助你更好地前进。",
+                "信任你的直觉，它往往能引导你做出正确的选择。",
+                "帮助他人也会给自己带来好运，慷慨会以另一种形式回报你。",
+                "学习新技能会带来意想不到的机会，投资自己永远值得。",
+                "今天适合整理生活环境，整洁的空间能带来好心情和好运气。",
+                "不要害怕表达自己的想法，你的意见可能正是别人需要的。"
+            ];
+            return advices[Math.floor(Math.random() * advices.length)];
+        }
+    </script>
+</body>
+</html>
